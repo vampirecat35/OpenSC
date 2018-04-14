@@ -334,8 +334,7 @@ pkcs15_bind(struct sc_pkcs11_card *p11card, struct sc_app_info *app_info)
 
 	if (idx == 0) {
 		/* send a notification only for the first application that's bound */
-		sc_notify_id(p11card->card->ctx, &p11card->reader->atr, fw_data->p15_card,
-				NOTIFY_CARD_INSERTED);
+		sc_notify_inserted(p11card->card->ctx, &p11card->reader->atr, fw_data->p15_card);
 	}
 
 	return CKR_OK;
@@ -371,10 +370,9 @@ pkcs15_unbind(struct sc_pkcs11_card *p11card)
 				if (rc <= 0 || rc & SC_READER_CARD_CHANGED) {
 					/* send a notification only if the card was removed/changed
 					 * and only for the first application that's unbound */
-					sc_notify_id(fw_data->p15_card->card->ctx,
+					sc_notify_removed(fw_data->p15_card->card->ctx,
 							&fw_data->p15_card->card->reader->atr,
-							fw_data->p15_card,
-							NOTIFY_CARD_REMOVED);
+							fw_data->p15_card);
 				}
 			}
 			rv = sc_pkcs15_unbind(fw_data->p15_card);

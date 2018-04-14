@@ -514,7 +514,7 @@ md_get_pin_by_role(PCARD_DATA pCardData, PIN_ID role, struct sc_pkcs15_object **
 }
 
 static const char *
-md_get_config_str(PCARD_DATA pCardData, enum ui_str id)
+md_get_config_str(PCARD_DATA pCardData, const char *option, const char *default)
 {
 	VENDOR_SPECIFIC *vs;
 	const char *ret = NULL;
@@ -524,15 +524,10 @@ md_get_config_str(PCARD_DATA pCardData, enum ui_str id)
 
 	vs = (VENDOR_SPECIFIC*) pCardData->pvVendorSpecific;
 	if (vs->ctx && vs->reader) {
-		const char *preferred_language = NULL;
 		struct sc_atr atr;
 		atr.len = pCardData->cbAtr;
 		memcpy(atr.value, pCardData->pbAtr, atr.len);
-		if (vs->p15card && vs->p15card->tokeninfo
-				&& vs->p15card->tokeninfo->preferred_language) {
-			preferred_language = vs->p15card->tokeninfo->preferred_language;
-		}
-		ret = ui_get_str(vs->ctx, &atr, vs->p15card, id);
+		ret = ui_get_config_str(vs->ctx, &atr, option, default);
 	}
 
 	return ret;
@@ -2806,9 +2801,10 @@ md_dialog_perform_pin_operation_thread(PVOID lpParameter)
 	return (DWORD) rv;
 }
 
-static const char *md_get_ui_str(PCARD_DATA pCardData, enum ui_str id)
+static const char *md_get_ui_str(PCARD_DATA pCardData,
+	   	const char *option, const char *default)
 {
-	const char *str = md_get_config_str(pCardData, id);
+	const char *str = md_get_config_str(pCardData, option, default);
 
 	if (str && *str == '\0') {
 		/* if the user used an empty string, remove the field by setting it to NULL */
@@ -2863,9 +2859,11 @@ static HRESULT CALLBACK md_dialog_proc(HWND hWnd, UINT message, WPARAM wParam, L
 				PCARD_DATA pCardData = (PCARD_DATA)((LONG_PTR*)param)[7];
 				VENDOR_SPECIFIC* vs = (VENDOR_SPECIFIC*) pCardData->pvVendorSpecific;
 				WCHAR *pszContent = wchar_from_char_str(md_get_ui_str(pCardData,
-							MD_PINPAD_DLG_CONTENT_CANCEL));
+							"md_pinpad_dlg_content_cancel";
+							_("Use the PIN pad to cancel the operation.")));
 				WCHAR *pszExpandedInformation = wchar_from_char_str(md_get_ui_str(pCardData,
-							MD_PINPAD_DLG_EXPANDED_CANCEL));
+							"md_pinpad_dlg_expanded_cancel";
+							_("Some readers only support canceling the operation on the PIN pad. Press Cancel or remove the card.")));
 
 				sc_cancel(vs->ctx);
 
@@ -2938,28 +2936,34 @@ md_dialog_perform_pin_operation(PCARD_DATA pCardData, int operation, struct sc_p
 	tc.hInstance = g_inst;
 
 	tc.pszWindowTitle = wchar_from_char_str(md_get_ui_str(pCardData,
-			MD_PINPAD_DLG_TITLE));
+				"md_pinpad_dlg_title",
+				_("Windows Security")));
 	tc.pszMainInstruction = wchar_from_char_str(md_get_ui_str(pCardData,
-			MD_PINPAD_DLG_MAIN));
-	tc.pszExpandedControlText = wchar_from_char_str(md_get_ui_str(pCardData,
-			MD_PINPAD_DLG_CONTROL_EXPANDED));
-	tc.pszCollapsedControlText = wchar_from_char_str(md_get_ui_str(pCardData,
-			MD_PINPAD_DLG_CONTROL_COLLAPSED));
+				"md_pinpad_dlg_main",
+				_("OpenSC Smart Card Provider")));
+	tc.pszExpandedControlText = wchar_from_char_str(
+			_("Click here for more information"));
+	tc.pszCollapsedControlText = wchar_from_char_str(
+			_("Click here for more information"));
 	tc.pszExpandedInformation = wchar_from_char_str(md_get_ui_str(pCardData,
-			MD_PINPAD_DLG_EXPANDED));
+				"md_pinpad_dlg_expanded",
+				_("This window will be closed automatically after the PIN has been submitted on the PIN pad (timeout typically after 30 seconds).")));
 	switch (role) {
 		case ROLE_ADMIN:
 			tc.pszContent = wchar_from_char_str(md_get_ui_str(pCardData,
-					MD_PINPAD_DLG_CONTENT_ADMIN));
+						"md_pinpad_dlg_content_admin",
+						_("Please enter your PIN to unblock the user PIN on the PIN pad.")));
 			break;
 		case MD_ROLE_USER_SIGN:
 			tc.pszContent = wchar_from_char_str(md_get_ui_str(pCardData,
-					MD_PINPAD_DLG_CONTENT_USER_SIGN));
+						"md_pinpad_dlg_content_user_sign",
+						_("Please enter your digital signature PIN on the PIN pad.")));
 			break;
 		case ROLE_USER:
 		default:
 			tc.pszContent = wchar_from_char_str(md_get_ui_str(pCardData,
-					MD_PINPAD_DLG_CONTENT_USER));
+						"md_pinpad_dlg_content_user",
+						_("Please enter your PIN on the PIN pad.")));
 			break;
 	}
 

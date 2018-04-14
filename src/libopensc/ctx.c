@@ -37,6 +37,7 @@
 #endif
 
 #include "common/libscdl.h"
+#include "ui/strings.h"
 #include "internal.h"
 
 int _sc_add_reader(sc_context_t *ctx, sc_reader_t *reader)
@@ -806,6 +807,7 @@ int sc_context_create(sc_context_t **ctx_out, const sc_context_param_t *parm)
 
 	ctx->flags = parm->flags;
 	set_defaults(ctx, &opts);
+	ui_localize_str(NULL);
 
 	if (0 != list_init(&ctx->readers)) {
 		sc_release_context(ctx);

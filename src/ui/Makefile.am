@@ -7,7 +7,7 @@ noinst_LTLIBRARIES = libstrings.la libnotify.la
 noinst_HEADERS = strings.h notify.h wchar_from_char_str.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
-AM_CFLAGS = $(OPTIONAL_OPENSSL_CFLAGS) $(OPTIONAL_NOTIFY_CFLAGS)
+AM_CFLAGS = $(OPTIONAL_OPENSSL_CFLAGS) $(OPTIONAL_NOTIFY_CFLAGS) -DLOCALEDIR=\"$(localedir)\"
 AM_OBJCFLAGS = $(AM_CFLAGS)
 
 libstrings_la_SOURCES = strings.c

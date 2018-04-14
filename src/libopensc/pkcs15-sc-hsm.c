@@ -31,6 +31,7 @@
 #include "asn1.h"
 #include "common/compat_strlcpy.h"
 #include "common/compat_strnlen.h"
+#include "ui/strings.h"
 
 #include "card-sc-hsm.h"
 
@@ -900,57 +901,6 @@ static int sc_pkcs15emu_sc_hsm_init (sc_pkcs15_card_t * p15card)
 
 	sc_pkcs15emu_sc_hsm_free_cvc(&devcert);
 
-	memset(&pin_info, 0, sizeof(pin_info));
-	memset(&pin_obj, 0, sizeof(pin_obj));
-
-	pin_info.auth_id.len = 1;
-	pin_info.auth_id.value[0] = 1;
-	pin_info.path.aid = sc_hsm_aid;
-	pin_info.auth_type = SC_PKCS15_PIN_AUTH_TYPE_PIN;
-	pin_info.attrs.pin.reference = 0x81;
-	pin_info.attrs.pin.flags = SC_PKCS15_PIN_FLAG_LOCAL|SC_PKCS15_PIN_FLAG_INITIALIZED|SC_PKCS15_PIN_FLAG_EXCHANGE_REF_DATA;
-	pin_info.attrs.pin.type = SC_PKCS15_PIN_TYPE_ASCII_NUMERIC;
-	pin_info.attrs.pin.min_length = 6;
-	pin_info.attrs.pin.stored_length = 0;
-	pin_info.attrs.pin.max_length = 15;
-	pin_info.attrs.pin.pad_char = '\0';
-	pin_info.tries_left = 3;
-	pin_info.max_tries = 3;
-
-	pin_obj.auth_id.len = 1;
-	pin_obj.auth_id.value[0] = 2;
-	strlcpy(pin_obj.label, "UserPIN", sizeof(pin_obj.label));
-	pin_obj.flags = SC_PKCS15_CO_FLAG_PRIVATE|SC_PKCS15_CO_FLAG_MODIFIABLE;
-
-	r = sc_pkcs15emu_add_pin_obj(p15card, &pin_obj, &pin_info);
-	if (r < 0)
-		LOG_FUNC_RETURN(card->ctx, r);
-
-	memset(&pin_info, 0, sizeof(pin_info));
-	memset(&pin_obj, 0, sizeof(pin_obj));
-
-	pin_info.auth_id.len = 1;
-	pin_info.auth_id.value[0] = 2;
-	pin_info.path.aid = sc_hsm_aid;
-	pin_info.auth_type = SC_PKCS15_PIN_AUTH_TYPE_PIN;
-	pin_info.attrs.pin.reference = 0x88;
-	pin_info.attrs.pin.flags = SC_PKCS15_PIN_FLAG_LOCAL|SC_PKCS15_PIN_FLAG_INITIALIZED|SC_PKCS15_PIN_FLAG_UNBLOCK_DISABLED|SC_PKCS15_PIN_FLAG_SO_PIN;
-	pin_info.attrs.pin.type = SC_PKCS15_PIN_TYPE_BCD;
-	pin_info.attrs.pin.min_length = 16;
-	pin_info.attrs.pin.stored_length = 0;
-	pin_info.attrs.pin.max_length = 16;
-	pin_info.attrs.pin.pad_char = '\0';
-	pin_info.tries_left = 15;
-	pin_info.max_tries = 15;
-
-	strlcpy(pin_obj.label, "SOPIN", sizeof(pin_obj.label));
-	pin_obj.flags = SC_PKCS15_CO_FLAG_PRIVATE;
-
-	r = sc_pkcs15emu_add_pin_obj(p15card, &pin_obj, &pin_info);
-	if (r < 0)
-		LOG_FUNC_RETURN(card->ctx, r);
-
-
 	if (card->type == SC_CARD_TYPE_SC_HSM_SOC
 			|| card->type == SC_CARD_TYPE_SC_HSM_GOID) {
 		/* SC-HSM of this type always has a PIN-Pad */
@@ -974,6 +924,60 @@ static int sc_pkcs15emu_sc_hsm_init (sc_pkcs15_card_t * p15card)
 
 	if ((r != SC_ERROR_DATA_OBJECT_NOT_FOUND) && (r != SC_ERROR_INCORRECT_PARAMETERS))
 		card->caps |= SC_CARD_CAP_PROTECTED_AUTHENTICATION_PATH;
+
+	memset(&pin_info, 0, sizeof(pin_info));
+	memset(&pin_obj, 0, sizeof(pin_obj));
+
+	pin_info.auth_id.len = 1;
+	pin_info.auth_id.value[0] = 1;
+	pin_info.path.aid = sc_hsm_aid;
+	pin_info.auth_type = SC_PKCS15_PIN_AUTH_TYPE_PIN;
+	pin_info.attrs.pin.reference = 0x81;
+	pin_info.attrs.pin.flags = SC_PKCS15_PIN_FLAG_LOCAL|SC_PKCS15_PIN_FLAG_INITIALIZED|SC_PKCS15_PIN_FLAG_EXCHANGE_REF_DATA;
+	pin_info.attrs.pin.type = SC_PKCS15_PIN_TYPE_ASCII_NUMERIC;
+	pin_info.attrs.pin.min_length = 6;
+	pin_info.attrs.pin.stored_length = 0;
+	pin_info.attrs.pin.max_length = 15;
+	pin_info.attrs.pin.pad_char = '\0';
+	pin_info.tries_left = 3;
+	pin_info.max_tries = 3;
+
+	pin_obj.auth_id.len = 1;
+	pin_obj.auth_id.value[0] = 2;
+	if (card->caps & SC_CARD_CAP_PROTECTED_AUTHENTICATION_PATH) {
+		strlcpy(pin_obj.label, _("Fingerprint or PIN"), sizeof(pin_obj.label));
+	} else {
+		strlcpy(pin_obj.label, _("User PIN"), sizeof(pin_obj.label));
+	}
+	pin_obj.flags = SC_PKCS15_CO_FLAG_PRIVATE|SC_PKCS15_CO_FLAG_MODIFIABLE;
+
+	r = sc_pkcs15emu_add_pin_obj(p15card, &pin_obj, &pin_info);
+	if (r < 0)
+		LOG_FUNC_RETURN(card->ctx, r);
+
+	memset(&pin_info, 0, sizeof(pin_info));
+	memset(&pin_obj, 0, sizeof(pin_obj));
+
+	pin_info.auth_id.len = 1;
+	pin_info.auth_id.value[0] = 2;
+	pin_info.path.aid = sc_hsm_aid;
+	pin_info.auth_type = SC_PKCS15_PIN_AUTH_TYPE_PIN;
+	pin_info.attrs.pin.reference = 0x88;
+	pin_info.attrs.pin.flags = SC_PKCS15_PIN_FLAG_LOCAL|SC_PKCS15_PIN_FLAG_INITIALIZED|SC_PKCS15_PIN_FLAG_UNBLOCK_DISABLED|SC_PKCS15_PIN_FLAG_SO_PIN;
+	pin_info.attrs.pin.type = SC_PKCS15_PIN_TYPE_BCD;
+	pin_info.attrs.pin.min_length = 16;
+	pin_info.attrs.pin.stored_length = 0;
+	pin_info.attrs.pin.max_length = 16;
+	pin_info.attrs.pin.pad_char = '\0';
+	pin_info.tries_left = 15;
+	pin_info.max_tries = 15;
+
+	strlcpy(pin_obj.label, "SO PIN", sizeof(pin_obj.label));
+	pin_obj.flags = SC_PKCS15_CO_FLAG_PRIVATE;
+
+	r = sc_pkcs15emu_add_pin_obj(p15card, &pin_obj, &pin_info);
+	if (r < 0)
+		LOG_FUNC_RETURN(card->ctx, r);
 
 
 	filelistlength = sc_list_files(card, filelist, sizeof(filelist));

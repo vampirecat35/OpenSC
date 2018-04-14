@@ -24,6 +24,110 @@
 
 #include "notify.h"
 
+#if defined(ENABLE_NOTIFY)
+
+#include <string.h>
+
+static const char *get_group(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card)
+{
+	if (p15card && p15card->card && p15card->card->reader) {
+		return p15card->card->reader->name;
+	}
+	if (ctx) {
+		return ctx->app_name;
+	}
+	return NULL;
+}
+
+static const char *get_inserted_title(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	const char *str;
+	if (p15card) {
+		str = _("Smart card is ready to use");
+	} else {
+		str = _("Smart card detected");
+	}
+	return ui_get_config_str(ctx, atr,
+		   	"notify_card_inserted", str);
+}
+
+static const char *get_inserted_text(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	static char text[3*SC_MAX_ATR_SIZE] = {0};
+	const char prefix[] = "ATR: ", *str = NULL;
+
+	if (p15card && p15card->card && p15card->card->name) {
+		str = p15card->card->name;
+	} else {
+		if (atr) {
+			strcpy(text, prefix);
+			sc_bin_to_hex(atr->value, atr->len, text + (sizeof prefix) - 1,
+					sizeof(text) - (sizeof prefix) - 1, ':');
+			str = text;
+		}
+	}
+	return ui_get_config_str(ctx, atr,
+		   	"notify_card_inserted_text", str);
+}
+
+static const char *get_removed_title(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	return ui_get_config_str(ctx, atr,
+			"notify_card_removed",
+			_("Smart card removed"));
+}
+
+static const char *get_removed_text(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	const char *str = NULL;
+	if (p15card && p15card->card) {
+		if (p15card->card->reader->name) {
+			str = p15card->card->reader->name;
+		}
+	}
+	return ui_get_config_str(ctx, atr,
+		   	"notify_card_removed_text", str);
+}
+
+static const char *get_pin_good_title(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	return ui_get_config_str(ctx, atr,
+			"notify_pin_good",
+			_("PIN verified"));
+}
+
+static const char *get_pin_good_text(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	return ui_get_config_str(ctx, atr,
+			"notify_pin_good_text",
+			_("Smart card is unlocked"));
+}
+
+static const char *get_pin_bad_title(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	return ui_get_config_str(ctx, atr,
+			"notify_pin_bad",
+			_("PIN not verified"));
+}
+
+static const char *get_pin_bad_text(struct sc_context *ctx,
+	   	struct sc_pkcs15_card *p15card, struct sc_atr *atr)
+{
+	return ui_get_config_str(ctx, atr,
+			"notify_pin_bad_text",
+			_("Smart card is locked"));
+}
+
+#endif
+
 #if defined(ENABLE_NOTIFY) && (defined(__APPLE__))
 
 #include "libopensc/internal.h"
@@ -232,37 +336,44 @@ void sc_notify(const char *title, const char *text)
 	notify_shell(NULL, title, text, NULL, 0);
 }
 
-void sc_notify_id(struct sc_context *ctx, struct sc_atr *atr,
-		struct sc_pkcs15_card *p15card, enum ui_str id)
+void sc_notify_inserted(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
 {
-	const char *title, *text;
-	LPCTSTR icon_path = NULL;
-	int icon_index = 0;
-	title = ui_get_str(ctx, atr, p15card, id);
-	text = ui_get_str(ctx, atr, p15card, id+1);
+	notify_shell(ctx,
+			get_inserted_title(ctx, p15card, atr),
+			get_inserted_text(ctx, p15card, atr),
+			icon_path = TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll"),
+			icon_index = 3);
+}
 
-	switch (id) {
-		case NOTIFY_CARD_INSERTED:
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll");
-			icon_index = 3;
-			break;
-		case NOTIFY_CARD_REMOVED:
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll");
-			icon_index = 2;
-			break;
-		case NOTIFY_PIN_GOOD:
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\certmgr.dll");
-			icon_index = 16;
-			break;
-		case NOTIFY_PIN_BAD:
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\certmgr.dll");
-			icon_index = 11;
-			break;
-		default:
-			break;
-	}
+void sc_notify_removed(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_shell(ctx,
+			get_removed_title(ctx, p15card, atr),
+			get_removed_text(ctx, p15card, atr),
+			icon_path = TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll"),
+			icon_index = 2);
+}
 
-	notify_shell(ctx, title, text, icon_path, icon_index);
+void sc_notify_pin_good(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_shell(ctx,
+			get_pin_good_title(ctx, p15card, atr),
+			get_pin_good_text(ctx, p15card, atr),
+			icon_path = TEXT("%SYSTEMROOT%\\system32\\certmgr.dll"),
+			icon_index = 16);
+}
+
+void sc_notify_pin_bad(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_shell(ctx,
+			get_pin_bad_title(ctx, p15card, atr),
+			get_pin_bad_text(ctx, p15card, atr),
+			icon_path = TEXT("%SYSTEMROOT%\\system32\\certmgr.dll"),
+			icon_index = 11);
 }
 
 #elif defined(ENABLE_NOTIFY) && defined(__APPLE__)
@@ -337,38 +448,48 @@ void sc_notify(const char *title, const char *text)
 	notify_proxy(NULL, title, NULL, text, NULL, NULL, NULL);
 }
 
-void sc_notify_id(struct sc_context *ctx, struct sc_atr *atr,
-		struct sc_pkcs15_card *p15card, enum ui_str id)
+void sc_notify_inserted(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
 {
-	const char *title, *text, *icon, *group;
-	title = ui_get_str(ctx, atr, p15card, id);
-	text = ui_get_str(ctx, atr, p15card, id+1);
+	notify_proxy(ctx,
+			get_inserted_title(ctx, p15card, atr),
+			NULL,
+			get_inserted_text(ctx, p15card, atr),
+			"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/VCard.icns",
+			get_group(ctx, p15card));
+}
 
-	if (p15card && p15card->card && p15card->card->reader) {
-		group = p15card->card->reader->name;
-	} else {
-		group = ctx ? ctx->app_name : NULL;
-	}
+void sc_notify_removed(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_proxy(ctx,
+			get_removed_title(ctx, p15card, atr),
+			NULL,
+			get_removed_text(ctx, p15card, atr),
+			"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/EjectMediaIcon.icns",
+			get_group(ctx, p15card));
+}
 
-	switch (id) {
-		case NOTIFY_CARD_INSERTED:
-			icon = "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/VCard.icns";
-			break;
-		case NOTIFY_CARD_REMOVED:
-			icon = "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/EjectMediaIcon.icns";
-			break;
-		case NOTIFY_PIN_GOOD:
-			icon = "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/UnlockedIcon.icns";
-			break;
-		case NOTIFY_PIN_BAD:
-			icon = "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/LockedIcon.icns";
-			break;
-		default:
-			icon = NULL;
-			break;
-	}
+void sc_notify_pin_good(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_proxy(ctx,
+			get_pin_good_title(ctx, p15card, atr),
+			NULL,
+			get_pin_good_text(ctx, p15card, atr),
+			"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/UnlockedIcon.icns",
+			get_group(ctx, p15card));
+}
 
-	notify_proxy(ctx, title, NULL, text, icon, NULL, group);
+void sc_notify_pin_bad(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_proxy(ctx,
+			get_pin_bad_title(ctx, p15card, atr),
+			NULL,
+			get_pin_bad_text(ctx, p15card, atr),
+			"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/LockedIcon.icns",
+			get_group(ctx, p15card));
 }
 
 #elif defined(ENABLE_NOTIFY) && defined(ENABLE_GIO2)
@@ -429,8 +550,14 @@ static void notify_gio(struct sc_context *ctx,
 void sc_notify_init(void) {}
 void sc_notify_close(void) {}
 void sc_notify(const char *title, const char *text) {}
-void sc_notify_id(struct sc_context *ctx, struct sc_atr *atr,
-		struct sc_pkcs15_card *p15card, enum ui_str id) {}
+void sc_notify_inserted(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card) {}
+void sc_notify_removed(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card) {}
+void sc_notify_pin_good(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card) {}
+void sc_notify_pin_bad(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card) {}
 
 #endif
 
@@ -440,38 +567,44 @@ void sc_notify(const char *title, const char *text)
 	notify_gio(NULL, title, text, NULL, NULL);
 }
 
-void sc_notify_id(struct sc_context *ctx, struct sc_atr *atr,
-		struct sc_pkcs15_card *p15card, enum ui_str id)
+void sc_notify_inserted(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
 {
-	const char *title, *text, *icon, *group;
-	title = ui_get_str(ctx, atr, p15card, id);
-	text = ui_get_str(ctx, atr, p15card, id+1);
+	notify_gio(ctx,
+			get_inserted_title(ctx, p15card, atr),
+			get_inserted_text(ctx, p15card, atr),
+			"dialog-information",
+			get_group(ctx, p15card));
+}
 
-	if (p15card && p15card->card && p15card->card->reader) {
-		group = p15card->card->reader->name;
-	} else {
-		group = ctx ? ctx->app_name : NULL;
-	}
+void sc_notify_removed(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_gio(ctx,
+			get_removed_title(ctx, p15card, atr),
+			get_removed_text(ctx, p15card, atr),
+			"media-removed",
+			get_group(ctx, p15card));
+}
 
-	switch (id) {
-		case NOTIFY_CARD_INSERTED:
-			icon = "dialog-information";
-			break;
-		case NOTIFY_CARD_REMOVED:
-			icon = "media-removed";
-			break;
-		case NOTIFY_PIN_GOOD:
-			icon = "changes-allow";
-			break;
-		case NOTIFY_PIN_BAD:
-			icon = "changes-prevent";
-			break;
-		default:
-			icon = NULL;
-			break;
-	}
+void sc_notify_pin_good(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_gio(ctx,
+			get_pin_good_title(ctx, p15card, atr),
+			get_pin_good_text(ctx, p15card, atr),
+			"changes-allow",
+			get_group(ctx, p15card));
+}
 
-	notify_gio(ctx, title, text, icon, group);
+void sc_notify_pin_bad(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card)
+{
+	notify_gio(ctx,
+			get_pin_bad_title(ctx, p15card, atr),
+			get_pin_bad_text(ctx, p15card, atr),
+			"changes-prevent",
+			get_group(ctx, p15card));
 }
 
 #endif

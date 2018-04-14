@@ -285,6 +285,12 @@ if test "${reader_count}" != "x"; then
 	AC_MSG_ERROR([Only one of --enable-pcsc, --enable-cryptotokenkit, --enable-openct, --enable-ctapi can be specified!])
 fi
 
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.19.8])
+
+dnl Add the languages which your application supports here.
+ALL_LINGUAS="de"
+
 dnl Checks for programs.
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -1042,6 +1048,7 @@ AC_CONFIG_FILES([
 	MacOSX/build-package
 	MacOSX/Distribution.xml
 	MacOSX/resources/Welcome.html
+	po/Makefile.in
 ])
 AC_OUTPUT
 

@@ -30,8 +30,14 @@ extern "C" {
 void sc_notify_init(void);
 void sc_notify_close(void);
 void sc_notify(const char *title, const char *text);
-void sc_notify_id(struct sc_context *ctx, struct sc_atr *atr,
-        struct sc_pkcs15_card *p15card, enum ui_str id);
+void sc_notify_inserted(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card);
+void sc_notify_removed(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card);
+void sc_notify_pin_good(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card);
+void sc_notify_pin_bad(struct sc_context *ctx, struct sc_atr *atr,
+		struct sc_pkcs15_card *p15card);
 
 #ifdef _WIN32
 #include <windows.h>

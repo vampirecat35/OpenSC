@@ -124,7 +124,7 @@ void notify_daemon(void)
 		error_count = 0;
 
 		if (event & SC_EVENT_CARD_REMOVED) {
-			sc_notify_id(ctx, &old_atr, NULL, NOTIFY_CARD_REMOVED);
+			sc_notify_removed(ctx, &old_atr, NULL);
 		}
 		if (event & SC_EVENT_CARD_INSERTED) {
 			if (event_reader) {
@@ -140,8 +140,7 @@ void notify_daemon(void)
 			} else {
 				old_atr.len = 0;
 			}
-			sc_notify_id(ctx, old_atr.len ? &old_atr : NULL, NULL,
-					NOTIFY_CARD_INSERTED);
+			sc_notify_inserted(ctx, old_atr.len ? &old_atr : NULL, NULL);
 		}
 	}
 
@@ -208,16 +207,16 @@ main (int argc, char **argv)
 
 	if (cmdline.standard_mode_counter) {
 		if (cmdline.notify_card_inserted_flag) {
-			sc_notify_id(NULL, NULL, NULL, NOTIFY_CARD_INSERTED);
+			sc_notify_inserted(NULL, NULL, NULL);
 		}
 		if (cmdline.notify_card_removed_flag) {
-			sc_notify_id(NULL, NULL, NULL, NOTIFY_CARD_REMOVED);
+			sc_notify_removed(NULL, NULL, NULL);
 		}
 		if (cmdline.notify_pin_good_flag) {
-			sc_notify_id(NULL, NULL, NULL, NOTIFY_PIN_GOOD);
+			sc_notify_pin_good(NULL, NULL, NULL);
 		}
 		if (cmdline.notify_pin_bad_flag) {
-			sc_notify_id(NULL, NULL, NULL, NOTIFY_PIN_BAD);
+			sc_notify_pin_bad(NULL, NULL, NULL);
 		}
 	}
 

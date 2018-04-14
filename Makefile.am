@@ -11,9 +11,9 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/m4/ltversion.m4 $(srcdir)/m4/lt~obsolete.m4 \
 	$(srcdir)/m4/ltoptions.m4 \
 	$(srcdir)/packaged
-EXTRA_DIST = Makefile.mak
+EXTRA_DIST = ./config.rpath  Makefile.mak
 
-SUBDIRS = etc src win32 doc MacOSX
+SUBDIRS = po etc src win32 doc MacOSX
 
 dist_noinst_SCRIPTS = bootstrap bootstrap.ci
 dist_noinst_DATA = README \

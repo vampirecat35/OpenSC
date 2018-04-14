@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include "util.h"
 #include "ui/notify.h"
+#include "ui/strings.h"
 
 int
 is_string_valid_atr(const char *atr_str)
@@ -55,6 +56,7 @@ util_connect_card_ex(sc_context_t *ctx, sc_card_t **cardp,
 	struct sc_card *card = NULL;
 	int r;
 
+	ui_localize_str(NULL);
 	sc_notify_init();
 
 	if (do_wait) {
@@ -82,7 +84,7 @@ util_connect_card_ex(sc_context_t *ctx, sc_card_t **cardp,
 		reader = found;
 	}
 	else if (sc_ctx_get_reader_count(ctx) == 0) {
-		fprintf(stderr, "No smart card readers found.\n");
+		fprintf(stderr, _("No smart card readers found.\n"));
 		return 1;
 	}
 	else   {
@@ -143,7 +145,7 @@ autofound:
 		}
 
 		if (sc_detect_card_presence(reader) <= 0) {
-			fprintf(stderr, "Card not present.\n");
+			fprintf(stderr, _("Card not present.\n"));
 			return 3;
 		}
 	}

@@ -23,35 +23,24 @@
 
 #include "libopensc/pkcs15.h"
 
+#ifdef ENABLE_NLS
+#include <libintl.h>
+#include <locale.h>
+#define _(string) gettext(string)
+#ifndef LOCALEDIR
+#define LOCALEDIR "/usr/share/locale"
+#endif
+#else
+#define _(string) string
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum ui_str {
-	MD_PINPAD_DLG_TITLE,
-	MD_PINPAD_DLG_MAIN,
-	MD_PINPAD_DLG_CONTENT_USER,
-	MD_PINPAD_DLG_CONTENT_ADMIN,
-	MD_PINPAD_DLG_CONTENT_CANCEL,
-	MD_PINPAD_DLG_EXPANDED,
-	MD_PINPAD_DLG_EXPANDED_CANCEL,
-	MD_PINPAD_DLG_CONTROL_COLLAPSED,
-	MD_PINPAD_DLG_CONTROL_EXPANDED,
-	MD_PINPAD_DLG_ICON,
-	MD_PINPAD_DLG_CANCEL,
-    NOTIFY_CARD_INSERTED,
-    NOTIFY_CARD_INSERTED_TEXT,
-    NOTIFY_CARD_REMOVED,
-    NOTIFY_CARD_REMOVED_TEXT,
-    NOTIFY_PIN_GOOD,
-    NOTIFY_PIN_GOOD_TEXT,
-    NOTIFY_PIN_BAD,
-    NOTIFY_PIN_BAD_TEXT,
-	MD_PINPAD_DLG_CONTENT_USER_SIGN,
-};
-
-const char *ui_get_str(struct sc_context *ctx, struct sc_atr *atr,
-	   	struct sc_pkcs15_card *p15card, enum ui_str id);
+const char *ui_get_config_str(struct sc_context *ctx,
+		struct sc_atr *atr, const char *flag_name, const char *ret_default);
+void ui_localize_str(const char *preferred);
 
 #ifdef __cplusplus
 }

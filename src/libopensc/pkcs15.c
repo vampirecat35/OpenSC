@@ -33,6 +33,7 @@
 #include "pkcs15.h"
 #include "asn1.h"
 #include "common/libscdl.h"
+#include "ui/strings.h"
 
 #ifdef ENABLE_OPENSSL
 #include <openssl/sha.h>
@@ -1293,6 +1294,9 @@ sc_pkcs15_bind(struct sc_card *card, struct sc_aid *aid,
 			goto error;
 	}
 done:
+	if (p15card->tokeninfo && p15card->tokeninfo->preferred_language) {
+		ui_localize_str(p15card->tokeninfo->preferred_language);
+	}
 	fix_starcos_pkcs15_card(p15card);
 
 	*p15card_out = p15card;

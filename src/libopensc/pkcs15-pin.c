@@ -362,8 +362,7 @@ int sc_pkcs15_verify_pin_with_session_pin(struct sc_pkcs15_card *p15card,
 	card = p15card->card;
 
 	if (pinlen > SC_MAX_PIN_SIZE) {
-		sc_notify_id(card->ctx, &card->reader->atr, p15card,
-				NOTIFY_PIN_BAD);
+		sc_notify_pin_bad(card->ctx, &card->reader->atr, p15card);
 		LOG_TEST_RET(ctx, SC_ERROR_INVALID_PIN_LENGTH, "Invalid PIN size");
 	}
 
@@ -453,8 +452,7 @@ int sc_pkcs15_verify_pin_with_session_pin(struct sc_pkcs15_card *p15card,
 			*sessionpinlen = data.pin2.len;
 		}
 	} else {
-		sc_notify_id(card->ctx, &card->reader->atr, p15card,
-				NOTIFY_PIN_BAD);
+		sc_notify_pin_bad(card->ctx, &card->reader->atr, p15card);
 		if (data.cmd == SC_PIN_CMD_GET_SESSION_PIN && sessionpinlen) {
 			*sessionpinlen = 0;
 		}
@@ -462,8 +460,11 @@ int sc_pkcs15_verify_pin_with_session_pin(struct sc_pkcs15_card *p15card,
 
 	if (auth_info->auth_type == SC_PKCS15_PIN_AUTH_TYPE_PIN
 			&& auth_info->auth_method != SC_AC_SESSION) {
-		sc_notify_id(card->ctx, &card->reader->atr, p15card,
-				r == SC_SUCCESS ? NOTIFY_PIN_GOOD : NOTIFY_PIN_BAD);
+		if (r == SC_SUCCESS) {
+			sc_notify_pin_good(card->ctx, &card->reader->atr, p15card);
+		} else {
+			sc_notify_pin_bad(card->ctx, &card->reader->atr, p15card);
+		}
 	}
 
 out:

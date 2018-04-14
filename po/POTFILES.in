@@ -1,0 +1,6 @@
+# List of source files which contain translatable strings.
+src/libopensc/pkcs15-sc-hsm.c
+src/minidriver/minidriver.c
+src/tools/util.c
+src/ui/notify.c
+src/ui/strings.c

@@ -1,0 +1,112 @@
+# OpenSC Localization
+# Copyright (C) YEAR OpenSC Project
+# This file is distributed under the same license as the opensc package.
+# Frank Morgner <frankmorgner@gmail.com>, 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: opensc 0.18.0\n"
+"Report-Msgid-Bugs-To: opensc-devel@lists.sourceforge.net\n"
+"POT-Creation-Date: 2018-04-18 10:45+0200\n"
+"PO-Revision-Date: 2018-04-14 11:44+0200\n"
+"Last-Translator: Frank Morgner <frankmorgner@gmail.com>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/libopensc/pkcs15-sc-hsm.c:938
+msgid "Fingerprint or PIN"
+msgstr "Fingerabdruck/PIN"
+
+#: src/libopensc/pkcs15-sc-hsm.c:940
+msgid "User PIN"
+msgstr "Nutzer-PIN"
+
+#: src/minidriver/minidriver.c:2863
+msgid "Use the PIN pad to cancel the operation."
+msgstr "Nutzen Sie das PIN-Pad, um den Vorgang abzubrechen."
+
+#: src/minidriver/minidriver.c:2866
+msgid ""
+"Some readers only support canceling the operation on the PIN pad. Press "
+"Cancel or remove the card."
+msgstr ""
+"Einige Kartenleser unterstützen das Abbrechen ausschließlich am PIN-Pad. "
+"Drücken Sie Cancel (Abbruch) oder entfernen Sie die Karte."
+
+#: src/minidriver/minidriver.c:2940
+msgid "Windows Security"
+msgstr "Windows-Sicherheit"
+
+#: src/minidriver/minidriver.c:2943
+msgid "OpenSC Smart Card Provider"
+msgstr "OpenSC Smartcard-Anbieter"
+
+#: src/minidriver/minidriver.c:2945 src/minidriver/minidriver.c:2947
+msgid "Click here for more information"
+msgstr "Weitere Informationen"
+
+#: src/minidriver/minidriver.c:2950
+msgid ""
+"This window will be closed automatically after the PIN has been submitted on "
+"the PIN pad (timeout typically after 30 seconds)."
+msgstr ""
+"Dieses Fenster wird automatisch geschlossen, wenn die PIN am PIN-Pad "
+"eingegeben wurde (Timeout typischerweise nach 30 Sekunden)."
+
+#: src/minidriver/minidriver.c:2955
+msgid "Please enter your PIN to unblock the user PIN on the PIN pad."
+msgstr ""
+"Bitte geben Sie Ihre PIN zum Entsperren der Nutzer-PIN auf dem PIN-Pad ein."
+
+#: src/minidriver/minidriver.c:2960
+msgid "Please enter your digital signature PIN on the PIN pad."
+msgstr ""
+"Bitte geben Sie Ihre PIN für die digitale Signatur auf dem PIN-Pad ein."
+
+#: src/minidriver/minidriver.c:2966
+msgid "Please enter your PIN on the PIN pad."
+msgstr "Bitte geben Sie Ihre PIN auf dem PIN-Pad ein."
+
+#: src/tools/util.c:87
+#, c-format
+msgid "No smart card readers found.\n"
+msgstr "Keinen Smartcardleser gefunden.\n"
+
+#: src/tools/util.c:148
+#, c-format
+msgid "Card not present.\n"
+msgstr "Keine Smartcard gefunden\n"
+
+#: src/ui/notify.c:48
+msgid "Smart card is ready to use"
+msgstr "Smartcard kann jetzt verwendet werden"
+
+#: src/ui/notify.c:50
+msgid "Smart card detected"
+msgstr "Smartcard erkannt"
+
+#: src/ui/notify.c:81
+msgid "Smart card removed"
+msgstr "Smartcard entfernt"
+
+#: src/ui/notify.c:102
+msgid "PIN verified"
+msgstr "PIN verifiziert"
+
+#: src/ui/notify.c:110
+msgid "Smart card is unlocked"
+msgstr "Smartcard ist entsperrt"
+
+#: src/ui/notify.c:118
+msgid "PIN not verified"
+msgstr "PIN nicht verifiziert"
+
+#: src/ui/notify.c:126
+msgid "Smart card is locked"
+msgstr "Smartcard ist gesperrt"
+
+#~ msgid "Cancel"
+#~ msgstr "Abbrechen"
