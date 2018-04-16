@@ -703,7 +703,6 @@ typedef struct sc_context {
 
 	FILE *debug_file;
 	char *debug_filename;
-	char *preferred_language;
 
 	list_t readers;
 

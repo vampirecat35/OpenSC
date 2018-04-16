@@ -919,8 +919,6 @@ int sc_release_context(sc_context_t *ctx)
 		if (drv->dll)
 			sc_dlclose(drv->dll);
 	}
-	if (ctx->preferred_language != NULL)
-		free(ctx->preferred_language);
 	if (ctx->mutex != NULL) {
 		int r = sc_mutex_destroy(ctx, ctx->mutex);
 		if (r != SC_SUCCESS) {
