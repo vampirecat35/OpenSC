@@ -44,7 +44,6 @@ setenv(name, value, overwrite) SetEnvironmentVariable(name, value)
 
 void ui_localize_str(const char *preferred)
 {
-	preferred = "de";
 	if (preferred) {
 		if (0 == strncmp(preferred, "de", 2)) {
 			setenv("LANG", "de_DE", 1);
