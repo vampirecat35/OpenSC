@@ -36,7 +36,7 @@ const char *ui_get_config_str(struct sc_context *ctx,
 
 #ifdef _WIN32
 #include <windows.h>
-setenv(name, value, overwrite) SetEnvironmentVariable(name, value)
+#define setenv(name, value, overwrite) SetEnvironmentVariable(name, value)
 #else
 #include <stdlib.h>
 #include <string.h>

@@ -342,8 +342,8 @@ void sc_notify_inserted(struct sc_context *ctx, struct sc_atr *atr,
 	notify_shell(ctx,
 			get_inserted_title(ctx, p15card, atr),
 			get_inserted_text(ctx, p15card, atr),
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll"),
-			icon_index = 3);
+			TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll"),
+			3);
 }
 
 void sc_notify_removed(struct sc_context *ctx, struct sc_atr *atr,
@@ -352,8 +352,8 @@ void sc_notify_removed(struct sc_context *ctx, struct sc_atr *atr,
 	notify_shell(ctx,
 			get_removed_title(ctx, p15card, atr),
 			get_removed_text(ctx, p15card, atr),
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll"),
-			icon_index = 2);
+			TEXT("%SYSTEMROOT%\\system32\\SCardDlg.dll"),
+			2);
 }
 
 void sc_notify_pin_good(struct sc_context *ctx, struct sc_atr *atr,
@@ -362,8 +362,8 @@ void sc_notify_pin_good(struct sc_context *ctx, struct sc_atr *atr,
 	notify_shell(ctx,
 			get_pin_good_title(ctx, p15card, atr),
 			get_pin_good_text(ctx, p15card, atr),
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\certmgr.dll"),
-			icon_index = 16);
+			TEXT("%SYSTEMROOT%\\system32\\certmgr.dll"),
+			16);
 }
 
 void sc_notify_pin_bad(struct sc_context *ctx, struct sc_atr *atr,
@@ -372,8 +372,8 @@ void sc_notify_pin_bad(struct sc_context *ctx, struct sc_atr *atr,
 	notify_shell(ctx,
 			get_pin_bad_title(ctx, p15card, atr),
 			get_pin_bad_text(ctx, p15card, atr),
-			icon_path = TEXT("%SYSTEMROOT%\\system32\\certmgr.dll"),
-			icon_index = 11);
+			TEXT("%SYSTEMROOT%\\system32\\certmgr.dll"),
+			11);
 }
 
 #elif defined(ENABLE_NOTIFY) && defined(__APPLE__)

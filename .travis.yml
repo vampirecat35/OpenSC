@@ -15,6 +15,7 @@ addons:
     - xsltproc
     - gengetopt
     - help2man
+    - autopoint
 
 env:
   global:
