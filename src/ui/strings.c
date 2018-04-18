@@ -20,8 +20,6 @@
 
 #include "libopensc/internal.h"
 #include "ui/strings.h"
-#include <stdlib.h>
-#include <string.h>
 
 const char *ui_get_config_str(struct sc_context *ctx,
 		struct sc_atr *atr, const char *flag_name, const char *ret_default)
@@ -36,8 +34,17 @@ const char *ui_get_config_str(struct sc_context *ctx,
 	return ret;
 }
 
+#ifdef _WIN32
+#include <windows.h>
+setenv(name, value, overwrite) SetEnvironmentVariable(name, value)
+#else
+#include <stdlib.h>
+#include <string.h>
+#endif
+
 void ui_localize_str(const char *preferred)
 {
+	preferred = "de";
 	if (preferred) {
 		if (0 == strncmp(preferred, "de", 2)) {
 			setenv("LANG", "de_DE", 1);

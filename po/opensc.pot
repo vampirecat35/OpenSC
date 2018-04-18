@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opensc 0.18.0\n"
 "Report-Msgid-Bugs-To: opensc-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2018-04-18 10:45+0200\n"
+"POT-Creation-Date: 2018-04-18 12:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/libopensc/pkcs15-sc-hsm.c:938
+#: src/libopensc/pkcs15-sc-hsm.c:948
 msgid "Fingerprint or PIN"
 msgstr ""
 
-#: src/libopensc/pkcs15-sc-hsm.c:940
+#: src/libopensc/pkcs15-sc-hsm.c:950
 msgid "User PIN"
 msgstr ""
 
