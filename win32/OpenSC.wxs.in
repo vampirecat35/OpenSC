@@ -111,6 +111,23 @@
               </Component>
             </Directory>
 
+            <Directory Id="INSTALLDIR_DOC" Name="doc">
+              <Component Id="files.html" Guid="*" Win64="$(var.Win64YesNo)">
+                <File Source="$(var.SOURCE_DIR)\doc\files\files.html" Name="files.html" KeyPath="yes"/>
+                <Shortcut
+                  Directory="ProgramMenuDocumentationDir"
+                  Name="OpenSC Configuration Files" Description="Documentation of OpenSC Configuration Files"
+                  Target="[#files.html]" />
+              </Component>
+              <Component Id="tools.html" Guid="*" Win64="$(var.Win64YesNo)">
+                <File Source="$(var.SOURCE_DIR)\doc\tools\tools.html" Name="tools.html" KeyPath="yes"/>
+                <Shortcut
+                  Directory="ProgramMenuDocumentationDir"
+                  Name="OpenSC Tools" Description="Documentation of OpenSC Tools"
+                  Target="[#tools.html]" />
+              </Component>
+            </Directory>
+
             <Directory Id="INSTALLDIR_PKCS11" Name="pkcs11">
               <Component Id="opensc_pkcs11.dll" Guid="*" Win64="$(var.Win64YesNo)">
                 <File Source="$(var.SOURCE_DIR)\src\pkcs11\opensc-pkcs11.dll" Vital="yes"/>
@@ -318,7 +335,9 @@
       <Directory Id="ProgramMenuFolder" Name="Programs">
         <Directory Id="ProgramMenuDir" Name="OpenSC Project">
           <Component Id="ProgramMenuDir" Guid="*">
-            <util:InternetShortcut Id="OnlineDocumentationShortcut" Name="OpenSC wiki" Target="https://github.com/OpenSC/OpenSC/wiki"/>
+            <Directory Id="ProgramMenuDocumentationDir" Name="Documentation">
+              <util:InternetShortcut Name="Online Wiki" Target="https://github.com/OpenSC/OpenSC/wiki"/>
+            </Directory>
             <RemoveFolder Id="ProgramMenuDir" On="uninstall"/>
             <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
           </Component>
@@ -334,6 +353,7 @@
           <ComponentRef Id="zlib1.dll"/>
         <?endif ?>
         <ComponentRef Id="opensc.conf"/>
+        <ComponentRef Id="files.html"/>
         <?ifdef OpenSSL ?>
           <ComponentRef Id="smm_local.dll"/>
         <?endif ?>
@@ -355,6 +375,7 @@
       </Feature>
       <!-- Tools and profiles are for personalization -->
       <Feature Id="OpenSC_tools" Level="1" Title="Tools and profiles" Description="Tools for debugging and personalization. Includes profiles needed for running pkcs15-init.exe">
+        <ComponentRef Id="tools.html"/>
         <ComponentRef Id="opensc_asn1.exe"/>
         <ComponentRef Id="opensc_explorer.exe"/>
         <ComponentRef Id="opensc_tool.exe"/>
