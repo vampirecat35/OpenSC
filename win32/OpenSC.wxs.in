@@ -115,6 +115,7 @@
               <Component Id="files.html" Guid="*" Win64="$(var.Win64YesNo)">
                 <File Source="$(var.SOURCE_DIR)\doc\files\files.html" Name="files.html" KeyPath="yes"/>
                 <Shortcut
+                  Id="files.html_shortcut"
                   Directory="ProgramMenuDocumentationDir"
                   Name="OpenSC Configuration Files" Description="Documentation of OpenSC Configuration Files"
                   Target="[#files.html]" />
@@ -122,6 +123,7 @@
               <Component Id="tools.html" Guid="*" Win64="$(var.Win64YesNo)">
                 <File Source="$(var.SOURCE_DIR)\doc\tools\tools.html" Name="tools.html" KeyPath="yes"/>
                 <Shortcut
+                  Id="tools.html_shortcut"
                   Directory="ProgramMenuDocumentationDir"
                   Name="OpenSC Tools" Description="Documentation of OpenSC Tools"
                   Target="[#tools.html]" />
@@ -158,6 +160,11 @@
               </Component>
               <Component Id="opensc_notify.exe" Guid="*" Win64="$(var.Win64YesNo)">
                 <File Source="$(var.SOURCE_DIR)\src\tools\opensc-notify.exe" Vital="yes"/>
+                <Shortcut
+                  Id="opensc_notify_shortcut"
+                  Directory="ProgramMenuDir"
+                  Name="OpenSC Notify" Description="Monitor smart card events to send notifications."
+                  Target="[#opensc_notify.exe]" />
               </Component>
               <Component Id="pkcs11_tool.exe" Guid="*" Win64="$(var.Win64YesNo)">
                 <File Source="$(var.SOURCE_DIR)\src\tools\pkcs11-tool.exe" Vital="yes"/>
@@ -334,13 +341,13 @@
       </Directory>
       <Directory Id="ProgramMenuFolder" Name="Programs">
         <Directory Id="ProgramMenuDir" Name="OpenSC Project">
-          <Component Id="ProgramMenuDir" Guid="*">
             <Directory Id="ProgramMenuDocumentationDir" Name="Documentation">
-              <util:InternetShortcut Name="Online Wiki" Target="https://github.com/OpenSC/OpenSC/wiki"/>
+              <Component Id="ProgramMenuDir" Guid="*">
+                <util:InternetShortcut Id="OnlineDocumentationShortcut" Name="Online Wiki" Target="https://github.com/OpenSC/OpenSC/wiki"/>
+                <RemoveFolder Id="ProgramMenuDir" On="uninstall"/>
+                <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+              </Component>
             </Directory>
-            <RemoveFolder Id="ProgramMenuDir" On="uninstall"/>
-            <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
-          </Component>
         </Directory>
       </Directory>
     </Directory>
