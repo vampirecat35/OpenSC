@@ -6,8 +6,11 @@ case "$1" in
     "pkcs11-tool")
         CMD="src/tools/pkcs11-tool --test"
         ;;
-    ""|"pkcs15-tool")
+    "pkcs15-tool")
         CMD="src/tools/pkcs15-tool --dump"
+        ;;
+    "eidenv")
+        CMD="src/tools/eidenv"
         ;;
     *)
         echo "Unknown fuzzing target"
