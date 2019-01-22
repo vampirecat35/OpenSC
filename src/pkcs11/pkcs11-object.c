@@ -1015,7 +1015,8 @@ CK_RV C_GenerateKeyPair(CK_SESSION_HANDLE hSession,	/* the session's handle */
 	}
 
 	slot = session->slot;
-	if (slot->p11card->framework->gen_keypair == NULL)
+	if (slot == NULL || slot->p11card == NULL || slot->p11card->framework == NULL
+			|| slot->p11card->framework->gen_keypair == NULL)
 		rv = CKR_FUNCTION_NOT_SUPPORTED;
 	else {
 		rv = restore_login_state(slot);

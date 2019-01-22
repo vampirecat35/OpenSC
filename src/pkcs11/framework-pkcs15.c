@@ -269,6 +269,8 @@ get_fw_data(struct sc_pkcs11_card *p11card, struct sc_app_info *app_info, int *o
 	struct pkcs15_fw_data *out = NULL;
 	int idx;
 
+	if (!p11card)
+		return NULL;
 	for (idx=0; p11card && idx < SC_PKCS11_FRAMEWORK_DATA_MAX_NUM; idx++)   {
 		struct pkcs15_fw_data *fw_data = (struct pkcs15_fw_data *) p11card->fws_data[idx];
 		struct sc_file *file_app = NULL;
@@ -353,6 +355,8 @@ pkcs15_unbind(struct sc_pkcs11_card *p11card)
 	unsigned int i, idx;
 	int rv = SC_SUCCESS;
 
+	if (!p11card)
+		return CKR_TOKEN_NOT_RECOGNIZED;
 	for (idx=0; p11card && idx<SC_PKCS11_FRAMEWORK_DATA_MAX_NUM; idx++)   {
 		struct pkcs15_fw_data *fw_data = (struct pkcs15_fw_data *) p11card->fws_data[idx];
 
@@ -1019,6 +1023,8 @@ pkcs15_add_object(struct sc_pkcs11_slot *slot, struct pkcs15_any_object *obj,
 	case SC_PKCS15_TYPE_PRKEY_EC:
 		if (slot->p11card != NULL) {
 			pkcs15_add_object(slot, (struct pkcs15_any_object *) obj->related_pubkey, NULL);
+			if (!slot->p11card)
+				return;
 			card_fw_data = (struct pkcs15_fw_data *) slot->p11card->fws_data[slot->fw_data_idx];
 			for (i = 0; i < card_fw_data->num_objects; i++) {
 				struct pkcs15_any_object *obj2 = card_fw_data->objects[i];
@@ -2729,6 +2735,8 @@ pkcs15_create_object(struct sc_pkcs11_slot *slot, CK_ATTRIBUTE_PTR pTemplate, CK
 	int rc;
 	CK_BBOOL p15init_create_object;
 
+	if (!p11card)
+		return CKR_TOKEN_NOT_RECOGNIZED;
 	fw_data = (struct pkcs15_fw_data *) p11card->fws_data[slot->fw_data_idx];
 	if (!fw_data)
 		return sc_to_cryptoki_error(SC_ERROR_INTERNAL, "C_CreateObject");
@@ -4278,6 +4286,8 @@ pkcs15_prkey_can_do(struct sc_pkcs11_session *session, void *obj,
 	if (!pkinfo->algo_refs[0])
 		return CKR_FUNCTION_NOT_SUPPORTED;
 
+	if (!p11card)
+		return CKR_TOKEN_NOT_RECOGNIZED;
 	fw_data = (struct pkcs15_fw_data *) p11card->fws_data[session->slot->fw_data_idx];
 	token_algos = &fw_data->p15_card->tokeninfo->supported_algos[0];
 
