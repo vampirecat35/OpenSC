@@ -155,32 +155,32 @@ script:
 
       java -noverify -cp IsoApplet/src/:jcardsim/target/jcardsim-3.0.5-SNAPSHOT.jar com.licel.jcardsim.remote.VSmartCard isoapplet_jcardsim.cfg >/dev/null &
       sleep 5;
-      valgrind --leak-check=full opensc-tool --card-driver default --send-apdu 80b800001a0cf276a288bcfba69d34f310010cf276a288bcfba69d34f3100100;
-      valgrind --leak-check=full opensc-tool -n;
+      valgrind opensc-tool --card-driver default --send-apdu 80b800001a0cf276a288bcfba69d34f310010cf276a288bcfba69d34f3100100;
+      valgrind opensc-tool -n;
       killall java;
 
       java -noverify -cp GidsApplet/src/:jcardsim/target/jcardsim-3.0.5-SNAPSHOT.jar com.licel.jcardsim.remote.VSmartCard gids_jcardsim.cfg >/dev/null &
       sleep 5;
-      valgrind --leak-check=full opensc-tool --card-driver default --send-apdu 80b80000190bA0000003974254465902010bA00000039742544659020100;
-      valgrind --leak-check=full opensc-tool -n;
-      valgrind --leak-check=full gids-tool --initialize --pin 123456 --admin-key 000000000000000000000000000000000000000000000000 --serial 00000000000000000000000000000000;
+      valgrind opensc-tool --card-driver default --send-apdu 80b80000190bA0000003974254465902010bA00000039742544659020100;
+      valgrind opensc-tool -n;
+      valgrind gids-tool --initialize --pin 123456 --admin-key 000000000000000000000000000000000000000000000000 --serial 00000000000000000000000000000000;
       killall java;
 
       java -noverify -cp ykneo-openpgp/applet/bin:jcardsim/target/jcardsim-3.0.5-SNAPSHOT.jar com.licel.jcardsim.remote.VSmartCard openpgp_jcardsim.cfg >/dev/null &
       sleep 5;
-      valgrind --leak-check=full opensc-tool --card-driver default --send-apdu 80b800002210D276000124010200000000000001000010D276000124010200000000000001000000;
-      valgrind --leak-check=full opensc-tool -n;
-      valgrind --leak-check=full pkcs11-tool -l -t -p 123456;
+      valgrind opensc-tool --card-driver default --send-apdu 80b800002210D276000124010200000000000001000010D276000124010200000000000001000000;
+      valgrind opensc-tool -n;
+      valgrind pkcs11-tool -l -t -p 123456;
       killall java;
 
       java -noverify -cp PivApplet/bin/:jcardsim/target/jcardsim-3.0.5-SNAPSHOT.jar com.licel.jcardsim.remote.VSmartCard PivApplet/test/jcardsim.cfg >/dev/null &
       sleep 5;
-      valgrind --leak-check=full opensc-tool --card-driver default --send-apdu 80b80000120ba000000308000010000100050000020F0F7f;
-      valgrind --leak-check=full opensc-tool -n;
+      valgrind opensc-tool --card-driver default --send-apdu 80b80000120ba000000308000010000100050000020F0F7f;
+      valgrind opensc-tool -n;
       yubico-piv-tool -r 'Virtual PCD 00 00' -P 123456 -s 9e -a generate > pubkey-9e.pem;
       yubico-piv-tool -r 'Virtual PCD 00 00' -P 123456 -s 9e -a selfsign-certificate -S '/CN=test' < pubkey-9e.pem > cert-9e.pem;
       yubico-piv-tool -r 'Virtual PCD 00 00' -P 123456 -s 9e -a import-certificate < cert-9e.pem;
-      valgrind --leak-check=full pkcs11-tool -l -t -p 123456;
+      valgrind pkcs11-tool -l -t -p 123456;
       killall java;
       set +ex;
     fi
