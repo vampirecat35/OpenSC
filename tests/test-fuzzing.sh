@@ -4,7 +4,7 @@ set -ex
 
 case "$1" in
     "pkcs11-tool")
-        CMD="src/tools/pkcs11-tool --test"
+        CMD="src/tools/pkcs11-tool --test --login --pin 123456"
         ;;
     "pkcs15-tool")
         CMD="src/tools/pkcs15-tool --dump"
