@@ -1283,7 +1283,8 @@ CK_RV C_GenerateRandom(CK_SESSION_HANDLE hSession,	/* the session's handle */
 	rv = get_session(hSession, &session);
 	if (rv == CKR_OK) {
 		slot = session->slot;
-		if (slot->p11card->framework->get_random == NULL)
+		if (slot == NULL || slot->p11card == NULL || slot->p11card->framework == NULL
+				|| slot->p11card->framework->get_random == NULL)
 			rv = CKR_RANDOM_NO_RNG;
 		else
 			rv = slot->p11card->framework->get_random(slot, RandomData, ulRandomLen);
