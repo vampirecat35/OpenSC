@@ -468,11 +468,6 @@ static int starcos_select_aid(sc_card_t *card,
 	if (!(apdu.sw1 == 0x90 && apdu.sw2 == 0x00) && apdu.sw1 != 0x61 )
     		SC_FUNC_RETURN(card->ctx, SC_LOG_DEBUG_VERBOSE, sc_check_sw(card, apdu.sw1, apdu.sw2));
   
-	/* update cache */
-	card->cache.current_path.type = SC_PATH_TYPE_DF_NAME;
-	card->cache.current_path.len = len;
-	memcpy(card->cache.current_path.value, aid, len);
-
 	if (file_out) {
 		sc_file_t *file = sc_file_new();
 		if (!file)
@@ -577,26 +572,11 @@ static int starcos_select_fid(sc_card_t *card,
 	if (apdu.sw1 != 0x61 && (apdu.sw1 != 0x90 || apdu.sw2 != 0x00))
 		SC_FUNC_RETURN(card->ctx, SC_LOG_DEBUG_VERBOSE, sc_check_sw(card, apdu.sw1, apdu.sw2));
 
-	/* update cache */
-	if (bIsDF || isMF) {
-		card->cache.current_path.type = SC_PATH_TYPE_PATH;
-		card->cache.current_path.value[0] = 0x3f;
-		card->cache.current_path.value[1] = 0x00;
-		if (id_hi == 0x3f && id_lo == 0x00)
-			card->cache.current_path.len = 2;
-		else {
-			card->cache.current_path.len = 4;
-			card->cache.current_path.value[2] = id_hi;
-			card->cache.current_path.value[3] = id_lo;
-		}
-	}
-
 	if (file_out) {
 		sc_file_t *file = sc_file_new();
 		if (!file)
 			LOG_FUNC_RETURN(card->ctx, SC_ERROR_OUT_OF_MEMORY);
 		file->id   = (id_hi << 8) + id_lo;
-		file->path = card->cache.current_path;
 
 		if (bIsDF) {
 			/* we have a DF */
@@ -640,20 +620,8 @@ static int starcos_select_file(sc_card_t *card,
 	u8 pathbuf[SC_MAX_PATH_SIZE], *path = pathbuf;
 	int    r;
 	size_t i, pathlen;
-	char pbuf[SC_MAX_PATH_STRING_SIZE];
 
 	SC_FUNC_CALLED(card->ctx, SC_LOG_DEBUG_VERBOSE);
-
-	r = sc_path_print(pbuf, sizeof(pbuf), &card->cache.current_path);
-	if (r != SC_SUCCESS)
-		pbuf[0] = '\0';
-
-	sc_log(card->ctx, 
-		 "current path (%s, %s): %s (len: %"SC_FORMAT_LEN_SIZE_T"u)\n",
-		 card->cache.current_path.type == SC_PATH_TYPE_DF_NAME ?
-		 "aid" : "path",
-		 card->cache.valid ? "valid" : "invalid", pbuf,
-		 card->cache.current_path.len);
 
 	memcpy(path, in_path->value, in_path->len);
 	pathlen = in_path->len;
@@ -666,23 +634,13 @@ static int starcos_select_file(sc_card_t *card,
 		return starcos_select_fid(card, path[0], path[1], file_out, 1);
 	}
 	else if (in_path->type == SC_PATH_TYPE_DF_NAME)
-      	{	/* SELECT DF with AID */
+	{	/* SELECT DF with AID */
 		/* Select with 1-16byte Application-ID */
-		if (card->cache.valid 
-		    && card->cache.current_path.type == SC_PATH_TYPE_DF_NAME
-		    && card->cache.current_path.len == pathlen
-		    && memcmp(card->cache.current_path.value, pathbuf, pathlen) == 0 )
-		{
-			sc_log(card->ctx,  "cache hit\n");
-			SC_FUNC_RETURN(card->ctx, SC_LOG_DEBUG_VERBOSE, SC_SUCCESS);
-		}
-		else
-			return starcos_select_aid(card, pathbuf, pathlen, file_out);
+		return starcos_select_aid(card, pathbuf, pathlen, file_out);
 	}
 	else if (in_path->type == SC_PATH_TYPE_PATH)
 	{
 		u8 n_pathbuf[SC_MAX_PATH_SIZE];
-		int bMatch = -1;
 
 		/* Select with path (sequence of File-IDs) */
 		/* Starcos (S 2.1 and SPK 2.3) only supports one
@@ -709,84 +667,14 @@ static int starcos_select_file(sc_card_t *card,
 				pathlen += 2;
 			}
 		}
-	
-		/* check current working directory */
-		if (card->cache.valid 
-		    && card->cache.current_path.type == SC_PATH_TYPE_PATH
-		    && card->cache.current_path.len >= 2
-		    && card->cache.current_path.len <= pathlen )
-		{
-			bMatch = 0;
-			for (i=0; i < card->cache.current_path.len; i+=2)
-				if (card->cache.current_path.value[i] == path[i] 
-				    && card->cache.current_path.value[i+1] == path[i+1] )
-					bMatch += 2;
 
-			if ((card->type == SC_CARD_TYPE_STARCOS_V3_4
-						|| card->type == SC_CARD_TYPE_STARCOS_V3_5)
-					&& bMatch > 0 && (size_t) bMatch < card->cache.current_path.len) {
-				/* we're in the wrong folder, start traversing from root */
-				bMatch = 0;
-				card->cache.current_path.len = 0;
-			}
-		}
-
-		if ( card->cache.valid && bMatch >= 0 )
+		/* no usable cache */
+		for ( i=0; i<pathlen-2; i+=2 )
 		{
-			if ( pathlen - bMatch == 2 )
-				/* we are in the right directory */
-				return starcos_select_fid(card, path[bMatch], path[bMatch+1], file_out, 1);
-			else if ( pathlen - bMatch > 2 )
-			{
-				/* two more steps to go */
-				sc_path_t new_path;
-	
-				/* first step: change directory */
-				r = starcos_select_fid(card, path[bMatch], path[bMatch+1], NULL, 0);
-				LOG_TEST_RET(card->ctx, r, "SELECT FILE (DF-ID) failed");
-	
-				memset(&new_path, 0, sizeof(sc_path_t));	
-				new_path.type = SC_PATH_TYPE_PATH;
-				new_path.len  = pathlen - bMatch-2;
-				memcpy(new_path.value, &(path[bMatch+2]), new_path.len);
-				/* final step: select file */
-				return starcos_select_file(card, &new_path, file_out);
-      			}
-			else /* if (bMatch - pathlen == 0) */
-			{
-				/* done: we are already in the
-				 * requested directory */
-				sc_log(card->ctx, 
-					"cache hit\n");
-				/* copy file info (if necessary) */
-				if (file_out) {
-					sc_file_t *file = sc_file_new();
-					if (!file)
-						LOG_FUNC_RETURN(card->ctx, SC_ERROR_OUT_OF_MEMORY);
-					file->id = (path[pathlen-2] << 8) +
-						   path[pathlen-1];
-					file->path = card->cache.current_path;
-					file->type = SC_FILE_TYPE_DF;
-					file->ef_structure = SC_FILE_EF_UNKNOWN;
-					file->size = 0;
-					file->namelen = 0;
-					file->magic = SC_FILE_MAGIC;
-					*file_out = file;
-				}
-				/* nothing left to do */
-				return SC_SUCCESS;
-			}
+			r = starcos_select_fid(card, path[i], path[i+1], NULL, 0);
+			LOG_TEST_RET(card->ctx, r, "SELECT FILE (DF-ID) failed");
 		}
-		else
-		{
-			/* no usable cache */
-			for ( i=0; i<pathlen-2; i+=2 )
-			{
-				r = starcos_select_fid(card, path[i], path[i+1], NULL, 0);
-				LOG_TEST_RET(card->ctx, r, "SELECT FILE (DF-ID) failed");
-			}
-			return starcos_select_fid(card, path[pathlen-2], path[pathlen-1], file_out, 1);
-		}
+		return starcos_select_fid(card, path[pathlen-2], path[pathlen-1], file_out, 1);
 	}
 	else
 		SC_FUNC_RETURN(card->ctx, SC_LOG_DEBUG_VERBOSE, SC_ERROR_INVALID_ARGUMENTS);
@@ -1168,7 +1056,6 @@ static int starcos_erase_card(sc_card_t *card)
 	
 	r = sc_transmit_apdu(card, &apdu);
 	LOG_TEST_RET(card->ctx, r, "APDU transmit failed");
-	sc_invalidate_cache(card);
 	if (apdu.sw1 == 0x69 && apdu.sw2 == 0x85)
 		/* no MF to delete, ignore error */
 		return SC_SUCCESS;

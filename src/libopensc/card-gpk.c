@@ -221,66 +221,6 @@ gpk_finish(sc_card_t *card)
 	return 0;
 }
 
-/*
- * Select a DF/EF
- */
-static int
-match_path(sc_card_t *card, unsigned short int **pathptr, size_t *pathlen,
-		int need_info)
-{
-	unsigned short int	*curptr, *ptr;
-	size_t		curlen, len;
-	size_t		i;
-
-	curptr = (unsigned short int *) card->cache.current_path.value;
-	curlen = card->cache.current_path.len;
-	ptr    = *pathptr;
-	len    = *pathlen;
-
-	if (curlen < 1 || len < 1)
-		return 0;
-
-	/* Make sure path starts with MF.
-	 * Note the cached path should always begin with MF. */
-	if (ptr[0] != GPK_FID_MF || curptr[0] != GPK_FID_MF)
-		return 0;
-
-	for (i = 1; i < len && i < curlen; i++) {
-		if (ptr[i] != curptr[i])
-			break;
-	}
-
-	if (len < curlen) {
-		/* Caller asked us to select the DF, but the
-		 * current file is some EF within the DF we're
-		 * interested in. Say ACK */
-		if (len == 2)
-			goto okay;
-		/* Anything else won't work */
-		return 0;
-	}
-
-	/* In the case of an exact match:
-	 * If the caller needs info on the file to be selected,
-	 * make sure we at least select the file itself.
-	 * If the DF matches the current DF, just return the
-	 * FID */
-	if (i == len && need_info) {
-		if (i > 1) {
-			*pathptr = ptr + len - 1;
-			*pathlen = len - 1;
-			return 1;
-		}
-		/* bummer */
-		return 0;
-	}
-
-okay:
-	*pathptr = ptr + i;
-	*pathlen = len - i;
-	return 1;
-}
-
 static void
 ac_to_acl(unsigned int ac, sc_file_t *file, unsigned int op)
 {
@@ -508,12 +448,6 @@ gpk_select(sc_card_t *card, int kind,
 	r = sc_check_sw(card, apdu.sw1, apdu.sw2);
 	LOG_TEST_RET(card->ctx, r, "Card returned error");
 
-	/* Nothing we can say about it... invalidate
-	 * path cache */
-	if (kind == GPK_SEL_AID) {
-		card->cache.current_path.len = 0;
-	}
-
 	if (file == NULL)
 		return 0;
 	*file = sc_file_new();
@@ -530,7 +464,6 @@ static int
 gpk_select_id(sc_card_t *card, int kind, unsigned int fid,
 		sc_file_t **file)
 {
-	sc_path_t	*cp = &card->cache.current_path;
 	u8		fbuf[2];
 	int		r;
 
@@ -542,23 +475,6 @@ gpk_select_id(sc_card_t *card, int kind, unsigned int fid,
 
 	r = gpk_select(card, kind, fbuf, 2, file);
 
-	/* Fix up the path cache.
-	 * NB we never cache the ID of an EF, just the DF path */
-	if (r == 0) {
-		unsigned short int	*path;
-
-		switch (kind) {
-		case GPK_SEL_MF:
-			cp->len = 0;
-			/* fallthru */
-		case GPK_SEL_DF:
-			assert(cp->len + 1 <= SC_MAX_PATH_SIZE / 2);
-			path = (unsigned short int *) cp->value;
-			path[cp->len++] = fid;
-		}
-	} else {
-		cp->len = 0;
-	}
 	return r;
 }
 
@@ -600,17 +516,7 @@ try_again:
 		pathptr[n>>1] = (path->value[n] << 8)|path->value[n+1];
 	pathlen = path->len >> 1;
 
-	/* See whether we can skip an initial portion of the
-	 * (absolute) path */
-	if (path->type == SC_PATH_TYPE_PATH) {
-		/* Do not retry selecting if this cannot be a DF */
-		if ((pathptr[0] == GPK_FID_MF && pathlen > 2)
-		 || (pathptr[0] != GPK_FID_MF && pathlen > 1))
-			retry = 0;
-		use_relative = match_path(card, &pathptr, &pathlen, file != 0);
-		if (pathlen == 0)
-			goto done;
-	} else {
+	if (path->type != SC_PATH_TYPE_PATH) {
 		/* SC_PATH_TYPE_FILEID */
 		if (pathlen > 1)
 			return SC_ERROR_INVALID_ARGUMENTS;
@@ -659,10 +565,9 @@ try_again:
 	 * All we can do is try */
 	r = gpk_select_id(card, leaf_type, pathptr[0], file);
 	if (r) {
-		/* Did we guess EF, and were wrong? If so, invalidate
-		 * path cache and try again; this time aiming for a DF */
+		/* Did we guess EF, and were wrong? If so,
+		 * try again; this time aiming for a DF */
 		if (leaf_type == GPK_SEL_EF && retry) {
-			card->cache.current_path.len = 0;
 			leaf_type = GPK_SEL_DF;
 			goto try_again;
 		}
