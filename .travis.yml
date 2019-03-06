@@ -8,7 +8,6 @@ matrix:
     - compiler: gcc
       os: linux
       env:
-        - DO_SIMULATION=yes
         - ENABLE_DOC=--enable-doc
       sudo: true
     - env:
