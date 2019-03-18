@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
 	if (err)
 		goto end;
 
-        if (opt_bind_to_aid)   {
+	if (opt_bind_to_aid)   {
 		struct sc_aid aid;
 
 		aid.len = sizeof(aid.value);
@@ -288,8 +288,7 @@ end:
 		sc_unlock(card);
 		sc_disconnect_card(card);
 	}
-	if (ctx)
-		sc_release_context(ctx);
+	sc_release_context(ctx);
 
 	return err;
 }

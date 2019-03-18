@@ -52,7 +52,7 @@ print_permissions(u8 permissions)
 {
     size_t perms_printed = 0;
     if (permissions & SOCM_AUTHOBJECT_PIN) {
-        printf("%s PIN", perms_printed ? " or" : "verification of");
+        printf("verification of PIN");
         perms_printed++;
     }
     if (permissions & SOCM_AUTHOBJECT_BIO) {
@@ -70,8 +70,8 @@ void
 soc_info(sc_context_t *ctx, sc_card_t *card)
 {
     sc_apdu_t apdu;
-    unsigned char rbuf[SC_MAX_APDU_BUFFER_SIZE];
-    u8 information_applets[SC_MAX_APDU_BUFFER_SIZE];
+    unsigned char rbuf[SC_MAX_APDU_RESP_SIZE];
+    u8 information_applets[SC_MAX_APDU_RESP_SIZE];
     size_t information_applets_len = sizeof information_applets;
     int pin_initialized = 0, bio_initialized = 0;
     int pin_max_retries = 0, pin_cur_retries = 0, bio_max_retries = 0, bio_cur_retries = 0;
@@ -114,11 +114,8 @@ soc_info(sc_context_t *ctx, sc_card_t *card)
         { NULL , 0 , 0 , 0 , NULL , NULL }
     };
 
-    sc_format_apdu(card, &apdu, SC_APDU_CASE_2, 0x61, 0x00, 0x00);
-
+    sc_format_apdu_ex(card, &apdu, 0x61, 0x00, 0x00, NULL, 0, rbuf, sizeof rbuf);
     apdu.cla = 0x80;
-    apdu.resp = rbuf;
-    apdu.resplen = sizeof rbuf;
 
     if (sc_transmit_apdu(card, &apdu) != SC_SUCCESS) {
         return;
@@ -178,7 +175,7 @@ soc_info(sc_context_t *ctx, sc_card_t *card)
                     /* i now counts the number of flags that were printed */
                     i = 0;
                     if (tag & 0x02) {
-                        printf("%sdefault selected", i ? ", " : "");
+                        printf("default selected");
                         i++;
                     }
                     if (tag & 0x01) {
@@ -239,7 +236,7 @@ soc_verify(sc_card_t *card, unsigned char p2)
 {
     int ok = 0;
     sc_apdu_t apdu;
-    sc_format_apdu(card, &apdu, SC_APDU_CASE_1, 0x20, 0x00, p2);
+    sc_format_apdu_ex(card, &apdu, 0x20, 0x00, p2, NULL, 0, NULL, 0);
     SC_TEST_GOTO_ERR(card->ctx, SC_LOG_DEBUG_VERBOSE_TOOL,
             sc_transmit_apdu(card, &apdu),
             "Verification failed");
@@ -275,7 +272,7 @@ soc_change(sc_card_t *card, unsigned char p1, unsigned char p2)
 {
     int ok = 0;
     sc_apdu_t apdu;
-    sc_format_apdu(card, &apdu, SC_APDU_CASE_1, 0x24, p1, p2);
+    sc_format_apdu_ex(card, &apdu, 0x24, p1, p2, NULL, 0, NULL, 0);
     SC_TEST_GOTO_ERR(card->ctx, SC_LOG_DEBUG_VERBOSE_TOOL,
             sc_transmit_apdu(card, &apdu),
             "Changing secret failed");
