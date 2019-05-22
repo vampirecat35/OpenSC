@@ -188,6 +188,7 @@ script:
       sleep 5;
       opensc-tool --card-driver default --send-apdu 80b800002210D276000124010200000000000001000010D276000124010200000000000001000000;
       opensc-tool -n;
+      pkcs15-init --generate-key rsa/2048 --id 3 --auth-id 3 --verify --pin 12345678 -vvv;
       pkcs11-tool -l -t -p 123456;
       killall java;
 
