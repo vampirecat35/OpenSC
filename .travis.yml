@@ -10,10 +10,10 @@ matrix:
       dist: trusty
       env:
         - DO_SIMULATION=javacard
-      sudo: true
       addons:
         apt_packages:
           - libpcsclite-dev
+      sudo: true
     - compiler: gcc
       os: linux
       env:
