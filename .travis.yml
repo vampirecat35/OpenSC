@@ -10,12 +10,15 @@ matrix:
       dist: trusty
       env:
         - DO_SIMULATION=javacard
-        - ENABLE_DOC=--enable-doc
       sudo: true
+      addons:
+        apt_packages:
+          - libpcsclite-dev
     - compiler: gcc
       os: linux
       env:
         - DO_SIMULATION=oseid
+        - ENABLE_DOC=--enable-doc
       sudo: true
     - env:
         - HOST=x86_64-w64-mingw32
